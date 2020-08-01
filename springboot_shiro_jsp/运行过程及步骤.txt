@@ -1,0 +1,116 @@
+
+——————————————运行条件——————————————————————
+注意运行前需要配置IDEA
+working directory
+%MODULE_WORKING_DIR%
+
+
+运行脚本 shiro.sql   shiro-data.sql
+
+
+
+
+————————————————核心类————————————————————
+核心类1  ShiroConfig
+---
+
+@Configuration
+public class ShiroConfig {
+    //1.创建shiroFilter  //负责拦截所有请求  哪些路径自动放行，哪些路径需要拦截在此配置
+    @Bean
+    public ShiroFilterFactoryBean getShiroFilterFactoryBean(DefaultWebSecurityManager defaultWebSecurityManager){
+
+    //2.创建安全管理器
+    @Bean
+    public DefaultWebSecurityManager getDefaultWebSecurityManager(Realm realm){
+
+    3.创建自定义realm       指定自定义realm CustomerRealm   注意设置密码 加密 在此进行
+    @Bean
+    public Realm getRealm(){
+
+}
+
+
+
+
+核心类2   CustomerRealm
+
+public class CustomerRealm extends AuthorizingRealm {
+    //  权限授权 给 返回对象  SimpleAuthorizationInfo 赋值 role  permission
+    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+    }
+    //身份认证  给 返回对象 SimpleAuthenticationInfo 赋值 用户名 密码 盐
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token){
+    }
+}
+
+
+
+——————————————————————————————————————
+---  用户名     口令    角色
+---  zhangsan   123   user
+---  xiaochen   123   admin
+---
+
+测试1：  是否可用
+http://localhost:8086/shiro/login.jsp
+zhangsan    123
+-----查看登录也是否可用  是否进入 index.jsp 页面
+
+
+测试2：打印日志
+resources/application.properties   中增加参数  ， 会打印 dao 下面的日志
+logging.level.com.tz.leo.springboot_shiro_jsp.dao=debug
+
+
+测试3：  shiro中授权编程实现方式
+-------1.  **标签式**-------index.jsp 页面有
+JSP/GSP 标签：在JSP/GSP 页面通过相应的标签完成：
+<shiro:hasRole name="admin">
+	<!— 有权限—>
+</shiro:hasRole>
+
+-------2. **编程式**-------/controller/Order2Controller 中有代码
+  Subject subject = SecurityUtils.getSubject();
+  if(subject.hasRole(“admin”)) {
+  	//有权限
+  } else {
+  	//无权限
+  }
+
+-------3. **注解式**-------/controller/OrderController 中有代码
+  @RequiresRoles("admin")
+  public void hello() {
+  	//有权限
+  }
+
+测试4：  设置缓存
+ShiroConfig 类中的  getRealm() 方法
+用 xiaochen /123   登录系统 进入 index.jsp 页面  不断刷新 页面
+注释或者启用如下代码   看看区别
+当注释如下代码  不断刷新页面   看到的效果是   不断的请求数据库
+当启用如下代码  不断刷新页面   看到的效果是   只有第一次请求数据库
+
+   //开启缓存管理    EhCacheManager
+        customerRealm.setCacheManager(new EhCacheManager());
+        customerRealm.setCachingEnabled(true);
+        customerRealm.setAuthenticationCachingEnabled(true);
+        customerRealm.setAuthenticationCacheName("authenticationCache");
+        customerRealm.setAuthorizationCachingEnabled(true);
+        customerRealm.setAuthorizationCacheName("authorizationCache");
+
+
+
+
+ShiroConfig
+public Realm getRealm(){
+ //开启缓存管理 -- 方式一    EhCacheManager
+//customerRealm.setCacheManager(new EhCacheManager());
+
+//开启缓存管理   -- 方式二   RedisCacheManager
+customerRealm.setCacheManager(new RedisCacheManager());
+
+
+测试5
+shiro  中盐的序列化有问题 需要关注 为了序列化它，专门写了方法   MyByteSource
+
