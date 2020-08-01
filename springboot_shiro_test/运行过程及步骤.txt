@@ -1,0 +1,48 @@
+
+=============================== 新增步骤 ===========================================
+第1步，  新增
+    新增 maven-archetype-quickstart 类型项目
+    resources 文件夹下面加入shiro.ini 文件 ，写入用户名 密码 键值对
+    [users]
+    xiaochen=123
+
+
+第2步 ，引入 依赖
+    <!--shiro核心依赖-->
+    <dependency>
+      <groupId>org.apache.shiro</groupId>
+      <artifactId>shiro-core</artifactId>
+      <version>1.5.3</version>
+    </dependency>
+
+第3步，增加测试主方法
+    com.tz.leo.springboot_shiro/ SimpleShiroTest 类 方法 test()
+    //创建securityManager
+    //将安装工具类中设置默认安全管理器
+    //获取主体对象
+    //创建token令牌
+    ... ...
+============================ 运行步骤 ==============================================
+第1步 运行 SimpleShiroTest
+     没有其他类的条件，
+     直接运行主方法
+
+第2步 运行 SimpleShiro2CustomerRealmTest
+     前提条件  CustomerRealm01
+     运行中加载上面自定义最简单的Realm
+
+第3步 运行 SimpleShiro3RealmWithmd5SaltTest
+     前提条件  CustomerRealm02WithMd5Salt
+     运行中加载上面自定义盐及散列次数的Realm
+
+第4步 运行 SimpleShiro4CustomerRealm03Test
+     前提条件  CustomerRealm03
+     运行中加载上面自定义认证方法 及授权方法
+
+
+
+
+
+
+
+
